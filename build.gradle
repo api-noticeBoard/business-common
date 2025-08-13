@@ -1,0 +1,109 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'java-library'   // api와 implementation을 구분하는 라이브러리용 plugin
+	id 'maven-publish'  // 배포를 위한 plugin
+}
+
+group = 'com.portfolio'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	// GitHub Packages 사용
+	maven{
+		name = "GitHubPackages"
+		def repoPath = System.getenv("GPR_SYS_PATH") ?: project.findProperty("gpr.sys.path")
+		// URL: https://maven.pkg.github.com/{조직명}/{저장소}
+		url = "https://maven.pkg.github.com/${repoPath}"
+		credentials{
+			// CI환경(github actions)과 로컬PC 모두 지원하는 방식
+			username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user")
+			password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.token")
+		}
+	}
+
+	mavenCentral()
+}
+
+dependencies {
+	// --- common system ---
+	api 'com.portfolio:common-system:0.0.1-SNAPSHOT'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// --- MyBatis ---
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+	// --- 캐시 ---
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+	// --- 유틸리티 ---
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	// --- 자동 설정을 위한 의존성 ---
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// mapper.xml을 src로 넣기 위한 코드
+sourceSets.main.resources.srcDirs += ["src/main/java"]
+sourceSets.test.resources.srcDirs += ["src/test/java"]
+
+// 실행 불가인 순수 Jar 만드는 설정 (라이브러리)
+jar {enabled=true}
+bootJar {enabled=false}
+// publishing 설정: GitHubPackages로 배포하기 위한 핵심
+//publishing{
+//	publications {
+//		maven(MavenPublication) {
+//			from components.java
+//
+//			// github packages 사용을 위한 명확히 표기
+//			groupId = 'com.portfolio'
+//			artifactId = 'common-business'	// 원하는 artifactId 명확히 지정
+//			version = '0.0.1-SNAPSHOT'
+//
+//			// version mapping
+//			versionMapping {
+//				// 'api'로 선언된 의존성에 대한 버전 매핑
+//				usage('java-api'){
+//					fromResolutionResult()
+//				}
+//				// 'implementation' 선언된 의존성에 대한 버전 매핑
+//				usage('java-runtime'){
+//					fromResolutionResult()
+//				}
+//			}
+//		}
+//	}
+//	repositories{
+//		maven{
+//			name = "GitHubPackages"
+//			// System.getenv = .github/workflows/publish.yml의 env 설정
+//			def repoPath = System.getenv("GPR_REPO_PATH") ?: project.findProperty("gpr.biz.path")
+//			url = "https://maven.pkg.github.com/${repoPath}"
+//			credentials{
+//				// CI환경(github actions)과 로컬PC 모두 지원하는 방식
+//				username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user")
+//				password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.token")
+//			}
+//		}
+//	}
+//}

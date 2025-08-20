@@ -40,7 +40,7 @@ jobs:
         run: ./gradlew publish
         env:
           GPR_BIZ_PATH: ${{secrets.COMM_BIZ_PACKAGE_PATH}}
-          GPR_SYS_PATH: ${{SECRETS.COMM_SYS_PACKAGE_PATH}}
+          GPR_SYS_PATH: ${{secrets.COMM_SYS_PACKAGE_PATH}}
           # GITHUB_TOKEN은 GitHub Actions가 자동으로 생성해주는 시크릿 토큰
           # 위 permissions 블록에서 부여한 권한을 갖게 됨
           GITHUB_ACTOR: ${{ github.actor }}

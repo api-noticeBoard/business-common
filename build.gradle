@@ -1,0 +1,62 @@
+plugins {
+	id 'java'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'java-library'	// api와 implementation을 구분하는 라이브러리용 plugin
+	id 'maven-publish'	// 배포를 위한 plugin
+}
+
+group = 'com.portolio.common'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	// GitHub Packages 사용
+	maven{
+		name = "GitHubPackages"
+		def repoPath = System.getenv("GPR_SYS_PATH") ?: project.findProperty("gpr.sys.path")
+		// URL: https://maven.pkg.github.com/{조직명}/{저장소}
+		url = "https://maven.pkg.github.com/${repoPath}"
+		credentials{
+			// CI환경(github actions)과 로컬PC 모두 지원하는 방식
+			username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user")
+			password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.token")
+		}
+	}
+
+	mavenCentral()
+}
+
+dependencies {
+//	api 'com.portfolio.common:system:0.0.1-SNAPSHOT'				// system common 라이브러리
+	api 'org.springframework.boot:spring-boot-starter-security'		// SpringSecurity
+	api 'org.springframework.boot:spring-boot-starter-data-jpa'		// JPA
+
+	// lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		// Spring Boot3.5.4가 권장하는 버전들을 자동으로 관리
+		mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.4")
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

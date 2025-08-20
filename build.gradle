@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-//	api 'com.portfolio.common:system:0.0.1-SNAPSHOT'				// system common 라이브러리
+	api 'com.portfolio.common:system:0.0.1-SNAPSHOT'				// system common 라이브러리
 	api 'org.springframework.boot:spring-boot-starter-security'		// SpringSecurity
 	api 'org.springframework.boot:spring-boot-starter-data-jpa'		// JPA
 

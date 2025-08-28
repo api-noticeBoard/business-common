@@ -41,7 +41,7 @@ public class UserInfoHolder {
      * @throws IllegalStateException 사용자가 인증되지 않은 경우
      */
     public static String getUsername() {
-        return getAuthUser().userName(); // AuthUser record의 username 필드를 반환
+        return getAuthUser().username(); // AuthUser record의 username 필드를 반환
     }
 
     /**

@@ -29,7 +29,7 @@ public class BaseEntity {
 
     @CreatedBy
     @Column(updatable = false, nullable = false)
-    private String createdBy; // 생성자 (사용자 ID)
+    private Long createdBy; // 생성자 (사용자 ID)
 
     @LastModifiedDate
     @Column(nullable = false)
@@ -37,5 +37,5 @@ public class BaseEntity {
 
     @LastModifiedBy
     @Column(nullable = false)
-    private String modifiedBy; // 수정자 (사용자 ID)
+    private Long modifiedBy; // 수정자 (사용자 ID)
 }

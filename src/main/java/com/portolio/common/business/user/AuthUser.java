@@ -14,11 +14,11 @@ import java.util.Set;
  * - equals(), hashCode(), toString() 메서드의 자동 구현
  *
  * @param userId    사용자의 고유 식별자(ID). 데이터베이스의 Primary Key에 해당합니다.
- * @param userName  사용자의 이름 또는 로그인 ID.
+ * @param username  사용자의 이름 또는 로그인 ID.
  * @param roles     사용자가 가진 권한 목록 (e.g., "ROLE_USER", "ROLE_ADMIN"). Set을 사용하여 중복 없는 권한을 보장합니다.
  */
 public record AuthUser(Long userId,
-                       String userName,
+                       String username,
                        Set<String> roles) implements Serializable {
 
     /**

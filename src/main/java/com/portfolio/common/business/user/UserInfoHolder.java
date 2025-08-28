@@ -16,8 +16,9 @@ public class UserInfoHolder {
      * 시스템 자체에서 수행되는 작업(예: 스케줄링, 배치)이나 비로그인 사용자를 나타내기 위한 가상 사용자 ID입니다.
      * JPA Auditing에서 @CreatedBy, @LastModifiedBy 필드를 채울 때,
      * 로그인한 사용자가 없는 경우 이 ID가 대신 사용됩니다.
+     * DB의 IDENTITY 전략이 보통 1부터 시작하므로, 0 대신 1을 사용하는 것이 더 안전합니다.
      */
-    private static final Long SYSTEM_USER_ID = 0L;
+    private static final Long SYSTEM_USER_ID = 1L;
 
     /**
      * private 생성자.

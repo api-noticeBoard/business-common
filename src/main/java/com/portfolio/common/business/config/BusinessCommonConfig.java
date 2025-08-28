@@ -1,6 +1,6 @@
-package com.portolio.common.business.config;
+package com.portfolio.common.business.config;
 
-import com.portolio.common.business.audit.AuditorAwareImpl;
+import com.portfolio.common.business.audit.AuditorAwareImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;

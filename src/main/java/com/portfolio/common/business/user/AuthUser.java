@@ -1,4 +1,4 @@
-package com.portolio.common.business.user;
+package com.portfolio.common.business.user;
 
 import java.io.Serializable;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package com.portolio.common.business.audit;
+package com.portfolio.common.business.audit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

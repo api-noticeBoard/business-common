@@ -5,7 +5,7 @@ plugins {
 	id 'maven-publish'	// 배포를 위한 plugin
 }
 
-group = 'com.portolio.common'
+group = 'com.portfolio.common'
 version = '0.0.1-SNAPSHOT'
 
 java {

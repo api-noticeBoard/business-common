@@ -1,4 +1,4 @@
-package com.portolio.common.business.masking;
+package com.portfolio.common.business.masking;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;

@@ -1,6 +1,6 @@
-package com.portolio.common.business.audit;
+package com.portfolio.common.business.audit;
 
-import com.portolio.common.business.user.UserInfoHolder;
+import com.portfolio.common.business.user.UserInfoHolder;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package com.portolio.common.business.user;
+package com.portfolio.common.business.user;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

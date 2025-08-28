@@ -41,6 +41,8 @@ dependencies {
 	api 'com.portfolio.common:system:0.0.1-SNAPSHOT'				// system common 라이브러리
 	api 'org.springframework.boot:spring-boot-starter-security'		// SpringSecurity
 	api 'org.springframework.boot:spring-boot-starter-data-jpa'		// JPA
+	// @JsonSerialize, @JacksonAnnotationsInside 등 핵심 어노테이션과 기능을 제공
+	api 'com.fasterxml.jackson.core:jackson-databind'
 
 	// lombok
 	compileOnly 'org.projectlombok:lombok'

@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -62,6 +61,10 @@ public record AuthUser(Long userId,
         // AuthUser 내부의 roles 상태는 절대로 변하지 않음을 보장할 수 있습니다.
         // 이는 특히 '권한'과 같은 민감한 데이터를 다룰 때 매우 중요한 보안 조치입니다.
         roles = Set.copyOf(roles);
+    }
+
+    public AuthUser(Long userId, String username, String password, String... roles) {
+        this(userId, username, password, Set.of(roles));
     }
 
     @Override

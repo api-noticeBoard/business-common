@@ -1,7 +1,14 @@
 package com.portfolio.common.business.user;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Java 21의 'record'를 사용하여 현재 인증된 사용자의 핵심 정보를 담는 불변(Immutable) 데이터 객체를 정의합니다.
@@ -15,11 +22,13 @@ import java.util.Set;
  *
  * @param userId    사용자의 고유 식별자(ID). 데이터베이스의 Primary Key에 해당합니다.
  * @param username  사용자의 이름 또는 로그인 ID.
+ * @param password  사용자의 비밀번호
  * @param roles     사용자가 가진 권한 목록 (e.g., "ROLE_USER", "ROLE_ADMIN"). Set을 사용하여 중복 없는 권한을 보장합니다.
  */
 public record AuthUser(Long userId,
                        String username,
-                       Set<String> roles) implements Serializable {
+                       String password,
+                       Set<String> roles) implements UserDetails, Serializable {
 
     /**
      * 직렬화(Serialization) 버전 UID(Unique ID).
@@ -53,5 +62,22 @@ public record AuthUser(Long userId,
         // AuthUser 내부의 roles 상태는 절대로 변하지 않음을 보장할 수 있습니다.
         // 이는 특히 '권한'과 같은 민감한 데이터를 다룰 때 매우 중요한 보안 조치입니다.
         roles = Set.copyOf(roles);
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public String getPassword() {
+        return "";
+    }
+
+    @Override
+    public String getUsername() {
+        return "";
     }
 }

@@ -38,4 +38,7 @@ public class BaseEntity {
     @LastModifiedBy
     @Column(nullable = false)
     private Long modifiedBy; // 수정자 (사용자 ID)
+
+    @Column
+    private LocalDateTime deletedAt;
 }

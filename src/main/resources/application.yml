@@ -1,3 +1,6 @@
 spring:
   application:
     name: business-common
+api:
+  holiday:
+    service-key: ${HOLIDAY_SERVICE_KEY}

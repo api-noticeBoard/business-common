@@ -1,6 +1,5 @@
 package com.portfolio.common.business;
 
-import com.portfolio.common.business.config.BusinessCommonConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

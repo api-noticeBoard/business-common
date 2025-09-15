@@ -15,7 +15,7 @@ import java.util.Set;
 
 @Slf4j
 @SpringBootTest // exclude 속성을 제거합니다.
-@ActiveProfiles("test") // 'test' 프로필을 활성화하여 application-test.yml을 읽게 합니다.
+@ActiveProfiles("local") // 'test' 프로필을 활성화하여 application-test.yml을 읽게 합니다.
 public class DateUtilsTest {
 
     @Test

@@ -45,4 +45,3 @@ jobs:
           # 위 permissions 블록에서 부여한 권한을 갖게 됨
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOLIDAY_SERVICE_KEY: ${{ secrets.HOLIDAY_SERVICE_KEY }}

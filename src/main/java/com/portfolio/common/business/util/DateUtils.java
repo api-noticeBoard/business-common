@@ -349,11 +349,11 @@ public class DateUtils {
     /**
      * 해당 날짜가 영업일(주말, 공휴일)인지 확인.
      * @param date
-     * @param hoildays
+     * @param holidays
      * @return
      */
-    public static boolean isBusinessDay(LocalDate date, Set<LocalDate> hoildays) {
-        Set<LocalDate> hoildaySet = (hoildays != null) ? hoildays : Set.of();
+    public static boolean isBusinessDay(LocalDate date, Set<LocalDate> holidays) {
+        Set<LocalDate> hoildaySet = (holidays != null) ? holidays : Set.of();
 
         if (isWeekend(date) || hoildaySet.contains(date)) {
             return false;
@@ -366,12 +366,12 @@ public class DateUtils {
      * 해당 날짜 이후의 가장 가까운 다음 영업일
      *
      * @param date
-     * @param hoildays
+     * @param holidays
      * @return
      */
-    public static LocalDate getNextBusinessDay(LocalDate date, Set<LocalDate> hoildays) {
+    public static LocalDate getNextBusinessDay(LocalDate date, Set<LocalDate> holidays) {
         LocalDate nextDay = date;
-        while (!isBusinessDay(nextDay, hoildays)) {
+        while (!isBusinessDay(nextDay, holidays)) {
             nextDay = nextDay.plusDays(1);
         }
 

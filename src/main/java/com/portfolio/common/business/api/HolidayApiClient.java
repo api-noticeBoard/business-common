@@ -33,7 +33,6 @@ public class HolidayApiClient {
     }
 
     public Set<LocalDate> getHoliday(int year) {
-        log.info("serviceKey : {}", this.serviceKey);
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(API_URL)
                 .queryParam("serviceKey", this.serviceKey)
                 .queryParam("solYear", year)
@@ -41,7 +40,7 @@ public class HolidayApiClient {
 
         URI uri = uriBuilder.build().toUri();
 
-        log.info("Requesting holidays for year {} from API: {}", year, uri);
+//        log.info("Requesting holidays for year {} from API: {}", year, uri);
 
         try {
             // 3. RestTemplate을 사용하여 GET 요청을 보내고, 응답을 ApiResponse 객체로 받습니다.

@@ -45,9 +45,9 @@ dependencies {
 	api 'com.fasterxml.jackson.core:jackson-databind'
 
 	// JAXB API: XML 데이터를 자바 객체로 매핑하기 위한 표준 인터페이스
-	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+	api 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
 // JAXB 구현체: 실제 XML 파싱을 수행하는 라이브러리
-	implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
+	api 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
 
 	// lombok
 	compileOnly 'org.projectlombok:lombok'

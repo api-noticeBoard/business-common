@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Set;
 
 public class DateUtils {
 
@@ -282,7 +284,6 @@ public class DateUtils {
     /**
      * 비교 시간을 년, 개월, 일, 시간, 분, 초로 변환.
      *
-     *
      * @param totalSeconds
      * @return
      */
@@ -334,23 +335,96 @@ public class DateUtils {
         return finalResult.isEmpty() ? "0초" : finalResult;
     }
 
-    // TODO: 영업일 계산 대체공휴일, 공휴일 계산
+    /** 영업일 계산 대체공휴일, 공휴일 계산 */
+    /**
+     * 해당 날짜가 주말인지 확인.
+     * @param date
+     * @return
+     */
+    public static boolean isWeekend(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY;
+    }
 
-        // TODO: 해당 날짜가 주말(토/일)인지 확인
+    /**
+     * 해당 날짜가 영업일(주말, 공휴일)인지 확인.
+     * @param date
+     * @param hoildays
+     * @return
+     */
+    public static boolean isBusinessDay(LocalDate date, Set<LocalDate> hoildays) {
+        Set<LocalDate> hoildaySet = (hoildays != null) ? hoildays : Set.of();
 
-        // TODO: 해당 날짜 영업일(주말, 공휴일 제외) 인지 확인
+        if (isWeekend(date) || hoildaySet.contains(date)) {
+            return false;
+        }
 
-        // TODO: 주어진 날짜 이후의 가장 가까운 다음 영업일 반환
+        return true;
+    }
 
-    // TODO: 주/월/분기 계산
+    /**
+     * 해당 날짜 이후의 가장 가까운 다음 영업일
+     *
+     * @param date
+     * @param hoildays
+     * @return
+     */
+    public static LocalDate getNextBusinessDay(LocalDate date, Set<LocalDate> hoildays) {
+        LocalDate nextDay = date;
+        while (!isBusinessDay(nextDay, hoildays)) {
+            nextDay = nextDay.plusDays(1);
+        }
 
-        // TODO: 해당 날짜가 포함된 주의 시작일(월요일)반환
+        return nextDay;
+    }
 
-        // TODO: 해당 날짜가 포함된 달의 마지막일 반환.
+    /** 주/월/분기 계산 */
+    /**
+     * 해당 날짜가 포함된 주의 시작일(월요일)반환
+     *
+     * @param date
+     * @return
+     */
+    public static LocalDate getStartOfWeek(LocalDate date) {
+        return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    }
 
-        // TODO: 해당 날짜가 포함된 분기의 시작일 반환(1,4,7,10월의 1일)
+    /**
+     * 해당 날짜가 포함된 달의 마지막일 반환.
+     *
+     * @param date
+     * @return
+     */
+    public static LocalDate getEndOfMonth(LocalDate date) {
+        return date.with(TemporalAdjusters.lastDayOfMonth());
+    }
 
-    // TODO: 시간대 처리 LocalDateTime을 외국 시간대로 변환
+    /**
+     * 해당 날짜가 포함된 분기의 시작일 반환(1,4,7,10월의 1일)
+     *
+     * @param date
+     * @return
+     */
+    public static LocalDate getStartOfQuarter(LocalDate date) {
+        int currentMonth = date.getMonthValue();                    // 현재 월 반환
+        int firstMonthOfQuarter = ((currentMonth -1) / 3) *3 +1;    // 분기의 앞달 설정
 
-    
+        return LocalDate.of(date.getYear(), firstMonthOfQuarter, 1);
+    }
+
+    /**
+     * 시간대 처리 LocalDateTime을 외국 시간대로 변환
+     *
+     * @param localDateTime
+     * @param fromZone
+     * @param toZone
+     * @return
+     */
+    public static LocalDateTime convertTimeZone(LocalDateTime localDateTime, ZoneId fromZone, ZoneId toZone) {
+        ZonedDateTime zonedDateTime = localDateTime.atZone(fromZone);
+        ZonedDateTime converted = zonedDateTime.withZoneSameInstant(toZone);
+
+        return converted.toLocalDateTime();
+    }
+
 }

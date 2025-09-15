@@ -44,6 +44,11 @@ dependencies {
 	// @JsonSerialize, @JacksonAnnotationsInside 등 핵심 어노테이션과 기능을 제공
 	api 'com.fasterxml.jackson.core:jackson-databind'
 
+	// JAXB API: XML 데이터를 자바 객체로 매핑하기 위한 표준 인터페이스
+	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+// JAXB 구현체: 실제 XML 파싱을 수행하는 라이브러리
+	implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
+
 	// lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -53,6 +58,10 @@ dependencies {
 
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// @SpringBootTest를 사용할 때 필요한 자동 설정 관련 클래스들을 포함시키기 위해 추가합니다.
+	// testImplementation은 이 의존성이 '테스트'를 실행할 때만 사용된다는 의미입니다.
+	testImplementation 'org.springframework.boot:spring-boot-autoconfigure'
 }
 
 dependencyManagement {

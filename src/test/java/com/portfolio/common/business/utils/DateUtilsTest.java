@@ -1,4 +1,4 @@
-package com.portfolio.common.business.DateUtilsTest;
+package com.portfolio.common.business.utils;
 
 import com.portfolio.common.business.api.HolidayApiClient;
 import com.portfolio.common.business.util.DateUtils;
@@ -6,13 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
 import java.util.Set;
 
 @Slf4j

@@ -38,6 +38,3 @@ out/
 
 ### Gradle ###
 gradle.properties
-
-### application ###
-application-local.yml

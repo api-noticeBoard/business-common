@@ -2,8 +2,8 @@ package com.portfolio.common.business.api;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -62,7 +62,7 @@ public class HolidayApiClient {
         return Collections.emptySet();
     }
 
-    // --- JAXB를 사용하여 XML 응답을 매핑할 DTO 클래스들 (기존과 동일) ---
+    // --- JAXB를 사용하여 XML 응답을 매핑할 DTO 클래스들 ---
     @XmlRootElement(name = "response")
     public static class ApiResponse {
         @XmlElement(name = "body") Body body;

@@ -1,7 +1,6 @@
-package com.portfolio.common.business.utils;
+package com.portfolio.common.business.util;
 
 import com.portfolio.common.business.api.HolidayApiClient;
-import com.portfolio.common.business.util.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,7 @@ public class DateUtilsTest {
 
     @Test
     void RelativeTimeTest(){
-        // give
+        // given
         String result = "";
         // 시간 계산
         LocalDateTime postDateTime = LocalDateTime.of(2025, 9,12, 14, 0);
@@ -66,7 +65,7 @@ public class DateUtilsTest {
 
     @Test
     void betweenDate(){
-        // give
+        // given
         String startStr = "2025-09-10 12:11:11.1111";
         String endStr = "2025-09-12 14:50:11";
 

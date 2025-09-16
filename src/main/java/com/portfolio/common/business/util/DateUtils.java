@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Set;
 
+//@UtilityClass
 public class DateUtils {
 
     private static final long SECONDS_PER_MINUTE = 60;
@@ -40,7 +41,7 @@ public class DateUtils {
     private static final DateTimeFormatter YEAR_FORMAT = DateTimeFormatter.ofPattern("yyyy");
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
-    // 유틸리티 클래스는 인스턴스화를 방지하기 위해 private 생성자를 명시적으로 선언
+    // 유틸리티 클래스는 인스턴스화를 방지하기 위해 private 생성자를 명시적으로 선언. lombok @UtilityClass있음 자동 생성
     private DateUtils() {
         throw new UnsupportedOperationException("이 클래스는 인스턴스화 할 수 없습니다.");
     }
@@ -426,5 +427,4 @@ public class DateUtils {
 
         return converted.toLocalDateTime();
     }
-
 }

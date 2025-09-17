@@ -346,6 +346,19 @@ public class NumberUtils {
     }
 
     /**
+     * 주어진 숫자를 특정 단위(unit)에 맞춰 반올림합니다.
+     * 예: (12345, 100) -> 12300, (12355, 100) -> 12400
+     *
+     * @param number 반올림할 원본 숫자
+     * @param unit   반올림 기준 단위 (예: 10, 100, 1000). 0보다 커야 함.
+     * @return 단위에 맞춰 반올림된 BigDecimal
+     */
+    public static BigDecimal roundToUnit(BigDecimal number, int unit) {
+        if (number == null || unit <= 0) return number;
+        BigDecimal unitDecimal = new BigDecimal(unit);
+        return number.divide(unitDecimal, 0, RoundingMode.HALF_UP).multiply(unitDecimal);
+    }
+    /**
      * 주어진 숫자를 특정 단위(unit)에 맞춰 버림(절사)
      * <pre>
      *     NumberUtils.floorToUnit(12399, 100);
@@ -438,7 +451,7 @@ public class NumberUtils {
      * @param value 확인할 숫자
      * @param start 시작 범위
      * @param end   끝 범위
-     * @return value >= start && value <= end 이면 true
+     * @return value > start && value < end 이면 true
      */
     public static boolean isBetweenExclusive(BigDecimal value, BigDecimal start, BigDecimal end){
         if (value == null || start == null || end == null) { return false; }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -13,110 +14,121 @@ import java.util.stream.Collectors;
 public class NumberUtilsTest {
 
     @Test
-    @DisplayName("통화 표시")
-    void formatAsKoreanWon() {
+    @DisplayName("숫자 포매팅")
+        void formatWithCommaTest(){
         // given
         Locale locale = Locale.US;
         // when
-        String result = NumberUtils.formatAsKoreanWon(BigDecimal.valueOf(123456789));
-        String result2 = NumberUtils.formatAsKoreanWon(BigDecimal.valueOf(123456789), locale);
+        String formatWithComma = NumberUtils.formatWithComma(BigDecimal.valueOf(1234567890));
+        String formatAsKoreanWon1 = NumberUtils.formatAsKoreanWon(BigDecimal.valueOf(123456789));
+        String formatAsKoreanWon2 = NumberUtils.formatAsKoreanWon(BigDecimal.valueOf(123456789), locale);
+        String formatWithPattern = NumberUtils.formatWithPattern(BigDecimal.valueOf(123456789), "#,##0.00");
+        BigDecimal parseStringToBigDecimal = NumberUtils.parseStringToBigDecimal("₩1,234,567.89");
+        String formatWithZeroPadding = NumberUtils.formatWithZeroPadding(BigDecimal.valueOf(123), 5);
+        String formatAsKoreaCurrencyText = NumberUtils.formatAsKoreaCurrencyText(BigDecimal.valueOf(123456789));
+        formatAsKoreaCurrencyText = "금 " + formatAsKoreaCurrencyText + " 원";
         // then
-        log.info("result : {}", result);    // ₩123,456,789
-        log.info("result2 : {}", result2);  // $123,456,789.00
-
+        log.info("formatWithComma : {}", formatWithComma);    // 1,234,567,890
+        log.info("formatAsKoreanWon1 : {}", formatAsKoreanWon1);    // ₩123,456,789
+        log.info("formatAsKoreanWon2 : {}", formatAsKoreanWon2);  // $123,456,789.00
+        log.info("formatWithPattern : {}", formatWithPattern);    // 123,456,789.00
+        log.info("parseStringToBigDecimal : {}", parseStringToBigDecimal);    // 1234567.89
+        log.info("formatWithZeroPadding : {}", formatWithZeroPadding);    // 00123
+        log.info("formatAsKoreaCurrencyText : {}", formatAsKoreaCurrencyText);    // 금 일억이천삼백사십오만육천칠백팔십구 원
     }
     @Test
-    @DisplayName("문자를 숫자로 변환")
-    void parseStringToBigDecimalTest(){
-        BigDecimal result = NumberUtils.parseStringToBigDecimal("₩1,234,567.89");
-
-        log.info("result : {}", result);    // 1234567.89
-    }
-    @Test
-    @DisplayName("지정된 길이 만큼 왼쪽으 0으로 채움")
-    void formatWithZeroPaddingTest() {
+    @DisplayName("안전한 연산")
+    void safeArithmeticTest(){
         // given, when
-        String result = NumberUtils.formatWithZeroPadding(BigDecimal.valueOf(123), 5);
-        // than
-        log.info("result : {}", result);    // 00123
-    }
-    @Test
-    @DisplayName("숫자 -> 한글 변환")
-    void formatAsKoreaCurrencyTest(){
-        // given, when
-        String result = NumberUtils.formatAsKoreaCurrencyText(BigDecimal.valueOf(123456789));
-        result = "금 " + result + " 원";
+        BigDecimal safeAdd = NumberUtils.safeAdd(BigDecimal.valueOf(123.123), BigDecimal.valueOf(456.456));
+        BigDecimal safeSubtract = NumberUtils.safeSubtract(BigDecimal.valueOf(4321.11), BigDecimal.valueOf(1234.11));
+        BigDecimal safeMultiply = NumberUtils.safeMultiply(BigDecimal.valueOf(123), BigDecimal.valueOf(456));
+        BigDecimal safeDivide1 = NumberUtils.safeDivide(BigDecimal.valueOf(120), BigDecimal.valueOf(20.4));
+        BigDecimal safeDivide2 = NumberUtils.safeDivide(BigDecimal.valueOf(120), BigDecimal.valueOf(20.4), 2, RoundingMode.UP);
         // then
-        log.info("result : {}", result);    // 금 일억이천삼백사십오만육천칠백팔십구 원
+        log.info("safeAdd : {}", safeAdd);    // 579.579
+        log.info("safeSubtract : {}", safeSubtract);    // 579.579
+        log.info("safeMultiply : {}", safeMultiply);    // 579.579
+        log.info("safeDivide1 : {}", safeDivide1);    // 579.579
+        log.info("safeDivide2 : {}", safeDivide2);    // 579.579
     }
     @Test
-    @DisplayName("주어진 문자열이 유효한 숫자인지 확인")
-    void isNumbericTest() {
+    @DisplayName("안전한 비교")
+    void safeComparisonTest() {
         // given, when
-        boolean result = NumberUtils.isNumberic("-123.45x");
+        boolean isNumberic = NumberUtils.isNumberic("-123.45x");
+        boolean isZero = NumberUtils.isZero(BigDecimal.valueOf(0.00));
+        int safeCompare = NumberUtils.safeCompare(BigDecimal.valueOf(1), BigDecimal.valueOf(1.1234));
+        boolean isGreaterThan = NumberUtils.isGreaterThan(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
+        boolean isGreaterThanOrEqual = NumberUtils.isGreaterThanOrEqual(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
+        boolean isLessThan = NumberUtils.isLessThan(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
+        boolean isLessThanOrEqual = NumberUtils.isLessThanOrEqual(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
+        boolean isEqual = NumberUtils.isEqual(BigDecimal.valueOf(10.00), BigDecimal.valueOf(10.000));
         // then
-        log.info("result : {}", result);    // false
+        log.info("isNumberic : {}", isNumberic);    // false
+        log.info("isZero : {}", isZero);    // true
+        log.info("safeCompare : {}", safeCompare);    // -1
+        log.info("isGreaterThan : {}", isGreaterThan);    // false
+        log.info("isGreaterThanOrEqual : {}", isGreaterThanOrEqual);    // true
+        log.info("isLessThan : {}", isLessThan);    // false
+        log.info("isLessThanOrEqual : {}", isLessThanOrEqual);    // true
+        log.info("isEqual : {}", isEqual);    // true
     }
     @Test
-    @DisplayName("해당 숫자가 0인지 확인")
-    void isZeroTest() {
-        boolean result = NumberUtils.isZero(BigDecimal.valueOf(0.00));
-        log.info("result : {}", result);    // true
-    }
-    @Test
-    @DisplayName("Bigdecimal null-safe 비교")
-    void safeCompareTest() {
-        // given, when
-        int result = NumberUtils.safeCompare(BigDecimal.valueOf(1), BigDecimal.valueOf(1.1234));
+    @DisplayName("반올림, 절삭")
+    void roundingAndTruncationTest(){
+        // given
+        int unit = 10;
+        // when
+        BigDecimal roundToUnit = NumberUtils.roundToUnit(BigDecimal.valueOf(123456), unit);
+        BigDecimal floorToUnit = NumberUtils.floorToUnit(BigDecimal.valueOf(123456), unit);
         // then
-        log.info("result : {}", result);    // -1
+        log.info("roundToUnit : {}", roundToUnit);    // 123460
+        log.info("floorToUnit : {}", floorToUnit);    // 123450
     }
     @Test
-    @DisplayName("기준값 대비 변경값의 변화율을 백분율(%)로 계산")
-    void calculatePercentageChangeTest() {
+    @DisplayName("비율, 백분율")
+    void ratioAndPercentageTest() {
         // given
         int scale = 2;
         // when
-        BigDecimal result = NumberUtils.calculatePercentageChange(BigDecimal.valueOf(10), BigDecimal.valueOf(7), scale);
+        BigDecimal calculatePercentageChange = NumberUtils.calculatePercentageChange(BigDecimal.valueOf(10), BigDecimal.valueOf(7), scale);
+        BigDecimal calculatePortionPercentage = NumberUtils.calculatePortionPercentage(BigDecimal.valueOf(6009.31), BigDecimal.valueOf(24095), scale);
+        BigDecimal applyPercentage = NumberUtils.applyPercentage(BigDecimal.valueOf(24095), BigDecimal.valueOf(24.94));
+
         // then
-        log.info("result : {}", result);    // -30.00
+        log.info("calculatePercentageChange : {}", calculatePercentageChange);    // -30.00
+        log.info("calculatePortionPercentage : {}", calculatePortionPercentage);    // 24.94
+        log.info("applyPercentage : {}", applyPercentage);    // 6009.2930
+
     }
     @Test
-    @DisplayName("전체(total)에서 부분(part)이 차지하는 비중을 백분율(%)로 계산")
-    void calculatePortionPercentageTest() {
-        // given
-        int scale = 2;
-        // when
-        BigDecimal result = NumberUtils.calculatePortionPercentage(BigDecimal.valueOf(6009.31), BigDecimal.valueOf(24095), scale);
-        // then
-        log.info("result : {}", result);    // 24.94
-    }
-    @Test
-    @DisplayName("주어진 값을 백분율(%) 적용값 계산")
-    void applyPercentageTest() {
+    @DisplayName("범위 확인")
+    void rangeTest() {
         // given, when
-        BigDecimal result = NumberUtils.applyPercentage(BigDecimal.valueOf(24095), BigDecimal.valueOf(24.94));
+        boolean isBetweenInclusive = NumberUtils.isBetweenInclusive(BigDecimal.valueOf(20), BigDecimal.valueOf(0), BigDecimal.valueOf(20));
+        boolean isBetweenExclusive = NumberUtils.isBetweenExclusive(BigDecimal.valueOf(20), BigDecimal.valueOf(0), BigDecimal.valueOf(20));
         // then
-        log.info("result : {}", result);    // 6009.2930
+        log.info("isBetweenInclusive : {}", isBetweenInclusive);    // true
+        log.info("isBetweenExclusive : {}", isBetweenExclusive);    // false
     }
     @Test
-    @DisplayName("숫자가 시작(start)과 끝(end) 범위 내에 있는지 확인")
-    void isBetweenInclusiveTest() {
+    @DisplayName("추출, 기본값 처리")
+    void extractionAndDefaultProcessingTest() {
         // given, when
-        boolean result = NumberUtils.isBetweenInclusive(BigDecimal.valueOf(20), BigDecimal.valueOf(0), BigDecimal.valueOf(20));
+        BigDecimal getIntegerPart = NumberUtils.getIntegerPart(BigDecimal.valueOf(12.345));
+        BigDecimal getFractionalPart = NumberUtils.getFractionalPart(BigDecimal.valueOf(12.345));
+        BigDecimal getOrDefault1 = NumberUtils.getOrDefault(null);
+        BigDecimal getOrDefault2 = NumberUtils.getOrDefault(null, BigDecimal.valueOf(12.345));
         // then
-        log.info("result : {}", result);    // true
+        log.info("getIntegerPart : {}", getIntegerPart);    // 12
+        log.info("getFractionalPart : {}", getFractionalPart);    // 0.345
+        log.info("getOrDefault1 : {}", getOrDefault1);    // 0
+        log.info("getOrDefault2 : {}", getOrDefault2);    // 12.345
+
     }
     @Test
-    @DisplayName("정수 추출")
-    void getIntegerPartTest() {
-        // given, when
-        BigDecimal result = NumberUtils.getIntegerPart(BigDecimal.valueOf(12.345));
-        // then
-        log.info("result : {}", result);    // 12
-    }
-    @Test
-    @DisplayName("현재 값중 최소값 반환")
+    @DisplayName("컬렉션 데이터 처리")
     void collectionDataProcessingTest() {
         // given
         List<BigDecimal> numbers = List.of(
@@ -155,6 +167,5 @@ public class NumberUtilsTest {
         log.info("average : {}", average);  // 17.12670
         log.info("min : {}", min);          // -12.345
         log.info("max : {}", max);          // 100
-
     }
 }

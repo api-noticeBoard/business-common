@@ -196,7 +196,7 @@ public class DateUtils {
 
     /**
      * 문자열을 LocalDateTime 객체로 변환하는 메서드 (Parsing)
-     * yyy-MM-dd HH:mm:ss.SSS 형식으로 String를 LocalDateTime 변환
+     * yyy-MM-dd HH:mm:ss.SSS 형식으로 String을 LocalDateTime 변환
      *
      * @param dateTimeString
      * @return
@@ -213,7 +213,7 @@ public class DateUtils {
 
     /**
      * 문자열을 LocalDate 객체로 변환하는 메서드 (Parsing)
-     * yyy-MM-dd 형식으로 String를 LocalDate 변환
+     * yyy-MM-dd 형식으로 String을 LocalDate 변환
      * @param dateTimeString
      * @return
      */

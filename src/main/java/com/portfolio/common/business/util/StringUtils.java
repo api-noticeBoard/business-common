@@ -4,6 +4,9 @@ import code.CaseType;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1070,5 +1073,297 @@ public class StringUtils {
         int endOffset = str.length() - targetStr /2;
         return str.substring(0, startOffset) + middle + str.substring(endOffset);
     }
+
     //----- 19. 데이터 변환 및 포매팅 (Data Conversion & Formatting) -----
+
+    /**
+     * 유니코드 문자열을 정규화(Normalization)
+     * 'ㄱ' + 'ㅏ' → '가' 와 같이 조합된 문자를 하나의 완성형 문자로 변환.
+     * 문자열 비교나 검색 시, 시각적으로는 같으나 바이트 코드가 다른 경우를 해결.
+     * 조합형(ㄱ+ㅣ+ㅁ)과 완성형(김) 유니코드를 정규화 형태의 동일한 코드값으로 변환.
+     *
+     * @param str 정규화할 문자열
+     * @return NFC 형식으로 정규화된 문자열
+     */
+    public static String normalize(final String str) {
+        if (str == null) return null;
+        return Normalizer.normalize(str, Normalizer.Form.NFC);
+    }
+
+    /**
+     * 숫자를 세 자리마다 콤마(,)가 포함된 문자열로 포맷팅.
+     * <pre>
+     * StringUtils.formatNumberWithCommas(1234567) = "1,234,567"
+     * </pre>
+     * @param number 포맷팅할 숫자
+     * @return 콤마가 포함된 숫자 문자열
+     */
+    public static String formatNumberWithCommas(final Number number) {
+        if (number == null) return null;
+        return NumberFormat.getInstance().format(number);
+    }
+
+    /**
+     * 문자열을 UTF-8 바이트 배열로 변환.
+     * 파일 저장이나 네트워크 전송 시 인코딩을 명확히 할 때 사용.
+     *
+     * @param str 변환할 문자열
+     * @return UTF-8 바이트 배열
+     */
+    public static byte[] getBytesUtf8(final String str) {
+        if (str == null) return null;
+        return str.getBytes(StandardCharsets.UTF_8);
+    }
+
+    /**
+     * [신규] UTF-8 바이트 배열을 문자열로 변환.
+     *
+     * @param bytes 변환할 바이트 배열
+     * @return UTF-8 문자열
+     */
+    public static String newStringUtf8(final byte[] bytes) {
+        if (bytes == null) return null;
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    //----- 고급 분리 및 결합 (Advanced Splitting & Joining) -----
+
+    /**
+     * 문자열을 특정 구분자로 분리한 후, 각 요소의 앞뒤 공백을 제거하여 배열로 반환.
+     * <pre>
+     * StringUtils.splitAndTrim(" a, b , c ", ",") = ["a", "b", "c"]
+     * StringUtils.splitAndTrim("a,b,,c", ",")    = ["a", "b", "", "c"]
+     * </pre>
+     * @param str 분리할 문자열
+     * @param separator 구분자 문자열
+     * @return 공백이 제거된 결과 문자열 배열
+     */
+    public static String[] splitAndTrim(final String str, final String separator) {
+        if (isEmpty(str)) return new String[0];
+        final String[] splitted = str.split(Pattern.quote(separator));
+        for (int i = 0; i < splitted.length; i++) {
+            splitted[i] = splitted[i].trim();
+        }
+        return splitted;
+    }
+    //----- 고급 치환 및 오버레이 (Advanced Replacement & Overlay) -----
+
+    /**
+     * 문자열에서 처음 발견되는 특정 문자열만 치환.
+     * <pre>
+     * StringUtils.replaceOnce("aba", "a", "z")  = "zba"
+     * StringUtils.replaceOnce("ab_ab", "ab", "") = "_ab"
+     * </pre>
+     * @param text 원본 텍스트
+     * @param searchStr 검색할 문자열
+     * @param replacement 치환할
+     */
+    public static String replaceOnce(final String text, final String searchStr, final String replacement) {
+        if (isEmpty(text) || isEmpty(searchStr)) return text;
+        int pos = text.indexOf(searchStr);
+        if (pos == -1) return text;
+        return text.substring(0, pos) + replacement + text.substring(pos + searchStr.length());
+    }
+
+    /**
+     * 문자열의 특정 구간을 다른 문자열로 덮어씌움(overlay).=
+     * <pre>
+     * StringUtils.overlay("abcdef", "ZZ", 2, 4)  = "abZZef" // c,d를 ZZ로
+     * StringUtils.overlay("12345678", "****", 2, 6) = "12****78" // mask와 유사
+     * </pre>
+     * @param str 원본 문자열
+     * @param overlay 덮어쓸 문자열
+     * @param start 시작 인덱스
+     * @param end 끝 인덱스
+     * @return 수정된 문자열
+     */
+    public static String overlay(final String str, String overlay, int start, int end) {
+        if (str == null) return null;
+        if (overlay == null) overlay = "";
+        int len = str.length();
+        if (start < 0) start = 0;
+        if (start > len) start = len;
+        if (end < 0) end = 0;
+        if (end > len) end = len;
+        if (start > end) {
+            int temp = start;
+            start = end;
+            end = temp;
+        }
+        return str.substring(0, start) + overlay + str.substring(end);
+    }
+
+    //----- 문자셋 및 인코딩 (Charset & Encoding) -----
+    /**
+     * 전각(Full-width) 문자를 반각(Half-width) 문자로 변환.
+     * 사용자 입력창에 'ＡＢＣ１２３' 와 같이 입력된 것을 'ABC123'으로 표준화할 때 사용.
+     * @param str 변환할 전각 문자열
+     * @return 변환된 반각 문자열
+     */
+    public static String toHalfWidth(final String str) {
+        if (isEmpty(str)) return str;
+        char[] c = str.toCharArray();
+        for (int i = 0; i < c.length; i++) {
+            // 전각 문자의 유니코드 범위 (U+FF01 ~ U+FF5E)를 확인
+            if (c[i] >= '\uFF01' && c[i] <= '\uFF5E') {
+                // 전각 문자를 반각 문자로 변환. (범위 차이: 0xFF00)
+                c[i] = (char) (c[i] - 0xFEE0);
+            } else if (c[i] == '\u3000') {
+                // 전각 공백(U+3000)을 일반 공백(U+0020)으로 변환
+                c[i] = ' ';
+            }
+        }
+        return new String(c);
+    }
+
+    /**
+     * 바이트 배열을 16진수(Hex) 문자열로 변환.
+     * 바이너리 데이터 로깅, 체크섬(checksum) 생성, 암호화 결과 확인 등에 사용.
+     * <pre>
+     * StringUtils.bytesToHexString("Hi".getBytes()) = "4869"
+     * </pre>
+     * @param bytes 변환할 바이트 배열
+     * @return 16진수 문자열
+     */
+    public static String bytesToHexString(final byte[] bytes) {
+        if (bytes == null) return null;
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            // 2자리의 16진수로 변환.
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
+
+    //----- 데이터 유효성 검사 및 파싱 (Data Validation & Parsing) -----
+    /**
+     * 문자열을 Long 타입으로 안전하게 변환. 변환 실패 시 기본값을 반환.
+     * NumberFormatException을 try-catch로 잡는 코드를 대체할 수 있음.
+     * @param str 변환할 문자열
+     * @param defaultValue 변환 실패 시 반환할 기본값
+     * @return 변환된 long 또는 기본값
+     */
+    public static long toLong(final String str, final long defaultValue) {
+        if (str == null) return defaultValue;
+        try {
+            return Long.parseLong(str);
+        } catch (final NumberFormatException numberFormatException) {
+            return defaultValue;
+        }
+    }
+    /**
+     * 문자열을 Double 타입으로 안전하게 변환. 변환 실패 시 기본값을 반환.
+     * @param str 변환할 문자열
+     * @param defaultValue 변환 실패 시 반환할 기본값
+     * @return 변환된 double 또는 기본값
+     */
+    public static double toDouble(final String str, final double defaultValue) {
+        if (str == null) return defaultValue;
+        try {
+            return Double.parseDouble(str);
+        } catch (final NumberFormatException numberFormatException) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * 문자열에서 지정된 문자들의 집합을 모두 제거.
+     * <pre>
+     * StringUtils.removeAll("1,000-00", ",", "-") = "100000"
+     * </pre>
+     * @param str 원본 문자열
+     * @param charsToRemove 제거할 문자들 (가변 인자)
+     * @return 지정된 문자들이 제거된 문자열
+     */
+    public static String removeAll(final String str, final char... charsToRemove) {
+        if (isEmpty(str) || charsToRemove == null || charsToRemove.length == 0) return str;
+        StringBuilder sb = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            boolean shouldRemove = false;
+            for (char removeChar : charsToRemove) {
+                if (c == removeChar) {
+                    shouldRemove = true;
+                    break;
+                }
+            }
+            if (!shouldRemove) sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    //----- 유사도 분석 및 차이점 (Similarity & Difference) -----
+    /**
+     * 두 문자열 간의 Jaro-Winkler 유사도를 계산. (0.0 ~ 1.0 사이, 1.0이 완전 일치)
+     * 레벤슈타인 거리가 '편집 거리'에 집중한다면, Jaro-Winkler는 특히 이름과 같은 짧은 문자열의 유사도에 더 강점임.
+     * 문자의 순서 뒤바뀜이나 접두사 일치를 고려하여 더 정확한 유사도를 계산(오타교정, 유사 정보 검색)
+     * <pre>
+     * StringUtils.getJaroWinklerDistance("MARTHA", "MARHTA")  // ~0.96
+     * StringUtils.getJaroWinklerDistance("apple", "apply")   // ~0.91
+     * </pre>
+     * @param s1 첫 번째 문자열
+     * @param s2 두 번째 문자열
+     * @return Jaro-Winkler 유사도 점수
+     */
+    public static double getJaroWinklerDistance(final CharSequence s1, final CharSequence s2) {
+        // 유효성 검사: 입력 문자열이 null인 경우 0.0을 반환
+        if (s1 == null || s2 == null) return 0.0;
+        // 동일하면 1.0을 반환
+        if (s1.toString().equals(s2.toString())) return 1.0;
+        int len1 = s1.length();
+        int len2 = s2.length();
+        // 검색 범위 설정: 두 문자열 중 더 긴 길이의 절반 - 1로 설정.
+        int searchRange = Math.max(0, Math.max(len1, len2) / 2 - 1);
+        boolean[] matched1 = new boolean[len1];
+        boolean[] matched2 = new boolean[len2];
+        // ** 일치하는 문자 찾기 **
+        int matches = 0;
+        for (int i = 0; i < len1; i++) {
+            char c1 = s1.charAt(i);
+            // 비교 시작점과 끝점은 검색 범위를 벗어나지 않도록 함.
+            int start = Math.max(0, i - searchRange);
+            int end = Math.min(len2, i + searchRange + 1);
+            for (int j = start; j < end; j++) {
+                // 이미 매치되었거나 문자가 다르면 건너뜀.
+                if (matched2[j] || c1 != s2.charAt(j)) continue;
+                // 일치하는 문자를 찾으면 매치 상태를 true로 설정하고, matches를 1 증가.
+                matched1[i] = true;
+                matched2[j] = true;
+                matches++;
+                break;
+            }
+        }
+        if (matches == 0) return 0.0;
+        // ** 순서가 맞지 않는 일치(Transpositions) 계산 **
+        int transpositions = 0;
+        int k = 0; // str2의 인덱스 추적
+        for (int i = 0; i < len1; i++) {
+            // str1에서 매치된 문자가 아니면 건너뜀.
+            if (!matched1[i]) continue;
+            // str2에서 매치된 다음 문자를 찾음.
+            while (!matched2[k]) k++;
+            // 순서가 다른 경우 transpositions를 증가.
+            if (s1.charAt(i) != s2.charAt(k)) transpositions++;
+            k++;
+        }
+        // 전위(Transpositions)의 수는 2로 나눔.
+        transpositions /= 2;
+        // Jaro 유사성(Jaro Similarity) 점수 계산
+        // 공식: (1/3) * (matches/len1 + matches/len2 + (matches-transpositions)/matches)
+        double jaro = ((double) matches / len1 + (double) matches / len2 + (double) (matches - transpositions) / matches) / 3.0;
+
+        // **Winkler 보정: 공통 접두사를 고려하여 점수를 높임.**
+        int prefixLength = 0;
+        // 접두사 길이는 최대 4까지만 고려함.
+        int maxPrefixLength = Math.min(4, Math.min(len1, len2));
+        for (int i = 0; i < maxPrefixLength; i++) {
+            // 문자가 동일하면 접두사 길이를 증가.
+            if (s1.charAt(i) == s2.charAt(i)) {
+                prefixLength++;
+            } else {
+                break;
+            }
+        }
+        // Jaro + (접두사 길이 * 0.1 * (1 - Jaro)) 공식을 적용.
+        return jaro + (0.1 * prefixLength * (1 - jaro));
+    }
 }

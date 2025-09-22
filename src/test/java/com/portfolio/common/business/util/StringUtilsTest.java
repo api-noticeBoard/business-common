@@ -280,8 +280,87 @@ public class StringUtilsTest {
         log.info("centerOfSentence2 : {}", StringUtils.centerOfSentence(sentence, 4));  // abc // def 개행됨
         log.info("chomp : {}", StringUtils.abbreviateMiddle(contractStr, "-", 15));    // abc
         log.info("chomp : {}", StringUtils.abbreviateMiddle(chompStr, "#", 4));    // abc
+    }
+    @Test
+    @DisplayName("데이터 변환 및 포매팅")
+    void dataConversionAndFormatting(){
+        // given
+        String str1 = "김";  // "김"
+        String str2 = "ㄱ" + "ㅣ" + "ㅁ";  // "ㄱㅣㅁ"
+        String str3 = "\u3131" + "\u3163" + "\u3141";   // "ㄱㅣㅁ"
+        String str4 = "\u1100\u1175\u11b7"; // "김"
+        int num = 123456789;
+        String sToB = "바이트 테스트";
+        byte[] bToS = {-21, -80, -108, -20, -99, -76, -19, -118, -72, 32, -19, -123, -116, -20, -118, -92, -19, -118, -72};
+        // when
+        String normalStr1 = StringUtils.normalize(str1);
+        String normalStr2 = StringUtils.normalize(str2);
+        String normalStr3 = StringUtils.normalize(str3);
+        String normalStr4 = StringUtils.normalize(str4);
+        // then
+        log.info("str1 : {}", str1);    // 김
+        log.info("str2 : {}", str2);    // ㄱㅣㅁ
+        log.info("str3 : {}", str3);    // ㄱㅣㅁ
+        log.info("str4 : {}", str4);    // ㄱㅣㅁ
+        log.info("compareStr1 : {}", str1.equals(str4));    // false
+        log.info("normalStr1 : {}", normalStr1);    // 김
+        log.info("normalStr2 : {}", normalStr2);    // ㄱㅣㅁ
+        log.info("normalStr3 : {}", normalStr3);    // ㄱㅣㅁ
+        log.info("normalStr4 : {}", normalStr4);    // 김
+        log.info("compareStr2 : {}", normalStr1.equals(normalStr4));    // true
 
+        log.info("formatNumberWithCommas : {}", StringUtils.formatNumberWithCommas(num));   // 123,456,789
+        log.info("getBytesUtf8 : {}", StringUtils.getBytesUtf8(sToB));  // [-21, -80, -108, -20, -99, -76, -19, -118, -72, 32, -19, -123, -116, -20, -118, -92, -19, -118, -72]
+        log.info("newStringUtf8 : {}", StringUtils.newStringUtf8(bToS));    // 바이트 테스트
+    }
+    @Test
+    @DisplayName("고급 분리 및 결합")
+    void advancedSplittingAndJoining(){
+        // given
+        String splitStr = "a, b,, c ";
+        // when, then
+        log.info("splitAndTrim : {}", Arrays.toString(StringUtils.splitAndTrim(splitStr, ",")));    // [a, b, , c]
+    }
+    @Test
+    @DisplayName("고급 치환 및 오버레이")
+    void advancedReplacementAndOverlay(){
+        // given
+        String str = "abcdef";
+        // when, then
+        log.info("replaceOnce : {}", StringUtils.replaceOnce(str, "c", "qqq")); // abqqqdef
+        log.info("overlay : {}", StringUtils.overlay(str, "1234", 2, 5));   // ab1234f
 
+    }
+    @Test
+    @DisplayName("문자셋 및 인코딩")
+    void charsetAndEncoding(){
+        // given
+        String str = "ＡＢＣ１２３";
+        // when, then
+        log.info("toHalfWidth : {}", StringUtils.toHalfWidth(str)); // ABC123
+        log.info("bytesToHexString : {}", StringUtils.bytesToHexString("checksum".getBytes())); // 636865636B73756D
+
+    }
+    @Test
+    @DisplayName("데이터 유효성 검사 및 파싱")
+    void dataValidationAndParsing(){
+        // given
+        String numL = "123456789";
+        String numD = "1234.56789";
+        String romveStr = "1,000-00";
+        // when, then
+        log.info("toLong : {}", StringUtils.toLong(numL, 0L));  // 123456789
+        log.info("toDouble : {}", StringUtils.toDouble(numD, 0.0)); // 1234.56789
+        log.info("removeAll : {}", StringUtils.removeAll(romveStr, ',', '-'));  // 100000
+    }
+    @Test
+    @DisplayName("유사도 분석 및 차이점")
+    void similarityAndDifference(){
+        // given
+        String str1 = "apple";
+        String str2 = "apply";
+        // when, then
+        log.info("getJaroWinklerDistance : {}", StringUtils.getJaroWinklerDistance(str1, str2));    // 0.92
     }
 }
 

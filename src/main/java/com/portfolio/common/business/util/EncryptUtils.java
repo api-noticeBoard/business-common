@@ -1,28 +1,34 @@
 package com.portfolio.common.business.util;
 
-import lombok.experimental.UtilityClass;
-
 import javax.crypto.*;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
-
-import static com.portfolio.common.business.util.StringUtils.bytesToHexString;
+import java.util.stream.Collectors;
+import java.util.zip.CRC32;
 
 /**
  * 암호화 관련 유틸리티 클래스.
  * AES, RSA, SHA, HMAC, Base64 등 다양한 암호화/인코딩 기능을 제공.
  */
-@UtilityClass
 public class EncryptUtils {
     private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final String RSA_ALGORITHM = "RSA/ECB/PKCS1Padding";
@@ -37,8 +43,10 @@ public class EncryptUtils {
     private static final int GCM_TAG_LENGTH = 128; // 인증 태그 길이(bits)
 
     // --- 대칭키 암호화 (AES) ---
+
     /**
      * AES-256 비밀키를 생성.
+     *
      * @return 생성된 SecretKey 객체
      * @throws NoSuchAlgorithmException 암호화 알고리즘이 지원되지 않을 경우 발생
      */
@@ -50,6 +58,7 @@ public class EncryptUtils {
 
     /**
      * 2. 주어진 비밀키(SecretKey)를 Base64 문자열로 인코딩.
+     *
      * @param secretKey Base64로 인코딩할 SecretKey 객체
      * @return Base64로 인코딩된 문자열 키
      */
@@ -59,6 +68,7 @@ public class EncryptUtils {
 
     /**
      * Base64로 인코딩된 문자열을 SecretKey 객체로 디코딩.
+     *
      * @param encodedKey Base64로 인코딩된 문자열 키
      * @return 디코딩된 SecretKey 객체
      */
@@ -69,6 +79,7 @@ public class EncryptUtils {
 
     /**
      * 16바이트(128비트) 초기화 벡터(IV)를 생성. (AES/CBC 모드용)
+     *
      * @return 생성된 IvParameterSpec 객체
      */
     public static IvParameterSpec generateIv() {
@@ -79,6 +90,7 @@ public class EncryptUtils {
 
     /**
      * 5. 주어진 초기화 벡터(IvParameterSpec)를 Base64 문자열로 인코딩.
+     *
      * @param iv Base64로 인코딩할 IvParameterSpec 객체
      * @return Base64로 인코딩된 문자열 IV
      */
@@ -88,6 +100,7 @@ public class EncryptUtils {
 
     /**
      * 6. Base64로 인코딩된 문자열을 IvParameterSpec 객체로 디코딩합니다.
+     *
      * @param encodedIv Base64로 인코딩된 문자열 IV
      * @return 디코딩된 IvParameterSpec 객체
      */
@@ -98,9 +111,10 @@ public class EncryptUtils {
 
     /**
      * 7. AES/CBC/PKCS5Padding 알고리즘을 사용하여 평문을 암호화합니다.
+     *
      * @param plainText 암호화할 평문
-     * @param key 암호화에 사용할 SecretKey
-     * @param iv 암호화에 사용할 초기화 벡터(IV)
+     * @param key       암호화에 사용할 SecretKey
+     * @param iv        암호화에 사용할 초기화 벡터(IV)
      * @return Base64로 인코딩된 암호문
      * @throws Exception 암호화 과정에서 오류 발생 시
      */
@@ -113,9 +127,10 @@ public class EncryptUtils {
 
     /**
      * 8. AES/CBC/PKCS5Padding 알고리즘을 사용하여 암호문을 복호화합니다.
+     *
      * @param cipherText Base64로 인코딩된 암호문
-     * @param key 복호화에 사용할 SecretKey
-     * @param iv 복호화에 사용할 초기화 벡터(IV)
+     * @param key        복호화에 사용할 SecretKey
+     * @param iv         복호화에 사용할 초기화 벡터(IV)
      * @return 복호화된 평문
      * @throws Exception 복호화 과정에서 오류 발생 시
      */
@@ -128,12 +143,14 @@ public class EncryptUtils {
     }
 
     // --- 2. 비대칭키 암호화 (RSA) --
+
     /**
      * 9. RSA 공개키/개인키 쌍을 생성합니다.
+     *
      * @return 생성된 KeyPair 객체
      * @throws NoSuchAlgorithmException 암호화 알고리즘이 지원되지 않을 경우 발생
      */
-    public static KeyPair generateRSAKeyPari() throws NoSuchAlgorithmException {
+    public static KeyPair generateRSAKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(RSA_KEY_SIZE);
         return keyPairGenerator.generateKeyPair();
@@ -141,6 +158,7 @@ public class EncryptUtils {
 
     /**
      * 10. 주어진 공개키(PublicKey)를 Base64 문자열로 인코딩합니다.
+     *
      * @param publicKey Base64로 인코딩할 PublicKey 객체
      * @return Base64로 인코딩된 문자열 공개키
      */
@@ -150,6 +168,7 @@ public class EncryptUtils {
 
     /**
      * 11. 주어진 개인키(PrivateKey)를 Base64 문자열로 인코딩합니다.
+     *
      * @param privateKey Base64로 인코딩할 PrivateKey 객체
      * @return Base64로 인코딩된 문자열 개인키
      */
@@ -159,6 +178,7 @@ public class EncryptUtils {
 
     /**
      * 12. Base64로 인코딩된 문자열을 PublicKey 객체로 디코딩합니다.
+     *
      * @param encodedPublicKey Base64로 인코딩된 문자열 공개키
      * @return 디코딩된 PublicKey 객체
      * @throws Exception 디코딩 과정에서 오류 발생 시
@@ -172,6 +192,7 @@ public class EncryptUtils {
 
     /**
      * 13. Base64로 인코딩된 문자열을 PrivateKey 객체로 디코딩합니다.
+     *
      * @param encodedPrivateKey Base64로 인코딩된 문자열 개인키
      * @return 디코딩된 PrivateKey 객체
      * @throws Exception 디코딩 과정에서 오류 발생 시
@@ -185,6 +206,7 @@ public class EncryptUtils {
 
     /**
      * 14. RSA 공개키를 사용하여 평문을 암호화합니다.
+     *
      * @param plainText 암호화할 평문
      * @param publicKey 암호화에 사용할 PublicKey
      * @return Base64로 인코딩된 암호문
@@ -199,6 +221,7 @@ public class EncryptUtils {
 
     /**
      * 15. RSA 개인키를 사용하여 암호문을 복호화합니다.
+     *
      * @param cipherText Base64로 인코딩된 암호문
      * @param privateKey 복호화에 사용할 PrivateKey
      * @return 복호화된 평문
@@ -214,6 +237,7 @@ public class EncryptUtils {
 
     /**
      * 16. SHA-256 알고리즘을 사용하여 문자열을 해싱합니다.
+     *
      * @param input 해싱할 입력 문자열
      * @return 해싱된 값 (Hex String)
      * @throws NoSuchAlgorithmException 해시 알고리즘이 지원되지 않을 경우 발생
@@ -224,8 +248,9 @@ public class EncryptUtils {
 
     /**
      * 17. 솔트(Salt)를 사용하여 SHA-256 해시를 생성합니다. (보안 강화)
+     *
      * @param input 해싱할 입력 문자열
-     * @param salt 해싱에 사용할 솔트 값
+     * @param salt  해싱에 사용할 솔트 값
      * @return 솔트가 적용된 해시 값 (Hex String)
      * @throws NoSuchAlgorithmException 해시 알고리즘이 지원되지 않을 경우 발생
      */
@@ -238,6 +263,7 @@ public class EncryptUtils {
 
     /**
      * 18. 보안 강화를 위한 랜덤 솔트(Salt)를 생성합니다.
+     *
      * @param size 생성할 솔트의 바이트 크기 (보통 16)
      * @return 생성된 솔트 바이트 배열
      */
@@ -250,6 +276,7 @@ public class EncryptUtils {
 
     /**
      * 19. 입력 문자열과 해시 값을 비교하여 일치 여부를 확인합니다.
+     *
      * @param originStr 원본 문자열
      * @param hashedStr 비교할 해시 문자열 (Hex)
      * @return 일치하면 true, 그렇지 않으면 false
@@ -262,9 +289,10 @@ public class EncryptUtils {
 
     /**
      * 20. 솔트를 사용하여 입력 문자열과 해시 값을 비교합니다.
+     *
      * @param originStr 원본 문자열
      * @param hashedStr 비교할 해시 문자열 (Hex)
-     * @param salt 해싱에 사용된 솔트
+     * @param salt      해싱에 사용된 솔트
      * @return 일치하면 true, 그렇지 않으면 false
      * @throws NoSuchAlgorithmException 해시 알고리즘이 지원되지 않을 경우 발생
      */
@@ -274,10 +302,12 @@ public class EncryptUtils {
     }
 
     // --- 4. HMAC ---
+
     /**
      * 21. HmacSHA256 알고리즘을 사용하여 메시지 인증 코드를 생성합니다.
+     *
      * @param data 인증할 데이터
-     * @param key 비밀키
+     * @param key  비밀키
      * @return 생성된 HMAC 값 (Base64 String)
      * @throws Exception HMAC 생성 과정에서 오류 발생 시
      */
@@ -287,8 +317,9 @@ public class EncryptUtils {
 
     /**
      * 22. 주어진 데이터와 HMAC 값을 비교하여 메시지 무결성을 검증합니다.
+     *
      * @param data 원본 데이터
-     * @param key 비밀키
+     * @param key  비밀키
      * @param hmac Base64로 인코딩된 HMAC 값
      * @return 유효하면 true, 그렇지 않으면 false
      * @throws Exception 검증 과정에서 오류 발생 시
@@ -299,8 +330,10 @@ public class EncryptUtils {
     }
 
     // --- 5. Base64 인코딩/디코딩 ---
+
     /**
      * 23. 문자열을 Base64로 인코딩합니다. (UTF-8)
+     *
      * @param plainText 인코딩할 문자열
      * @return Base64로 인코딩된 문자열
      */
@@ -310,6 +343,7 @@ public class EncryptUtils {
 
     /**
      * 24. Base64로 인코딩된 문자열을 디코딩합니다. (UTF-8)
+     *
      * @param encodedText Base64로 인코딩된 문자열
      * @return 디코딩된 문자열
      */
@@ -319,6 +353,7 @@ public class EncryptUtils {
 
     /**
      * 25. 바이트 배열을 Base64 문자열로 인코딩합니다.
+     *
      * @param bytes 인코딩할 바이트 배열
      * @return Base64로 인코딩된 문자열
      */
@@ -328,6 +363,7 @@ public class EncryptUtils {
 
     /**
      * 26. Base64 문자열을 바이트 배열로 디코딩합니다.
+     *
      * @param encodedText Base64로 인코딩된 문자열
      * @return 디코딩된 바이트 배열
      */
@@ -338,6 +374,7 @@ public class EncryptUtils {
     /**
      * 27. URL-safe Base64로 문자열을 인코딩합니다.
      * URL에 포함될 수 있는 '+', '/' 문자를 '-', '_'로 대체합니다.
+     *
      * @param plainText 인코딩할 문자열
      * @return URL-safe Base64로 인코딩된 문자열
      */
@@ -347,6 +384,7 @@ public class EncryptUtils {
 
     /**
      * 28. URL-safe Base64로 인코딩된 문자열을 디코딩합니다.
+     *
      * @param encodedText URL-safe Base64로 인코딩된 문자열
      * @return 디코딩된 문자열
      */
@@ -356,9 +394,11 @@ public class EncryptUtils {
     }
 
     // --- 6. 디지털 서명 (RSA with SHA256) ---
+
     /**
      * 29. RSA 개인키를 사용하여 데이터에 대한 디지털 서명을 생성합니다.
-     * @param data 서명할 데이터
+     *
+     * @param data       서명할 데이터
      * @param privateKey 서명에 사용할 PrivateKey
      * @return Base64로 인코딩된 서명 값
      * @throws Exception 서명 생성 과정에서 오류 발생 시
@@ -373,7 +413,8 @@ public class EncryptUtils {
 
     /**
      * 30. RSA 공개키를 사용하여 디지털 서명을 검증합니다.
-     * @param data 원본 데이터
+     *
+     * @param data      원본 데이터
      * @param signature Base64로 인코딩된 서명 값
      * @param publicKey 검증에 사용할 PublicKey
      * @return 서명이 유효하면 true, 그렇지 않으면 false
@@ -388,17 +429,19 @@ public class EncryptUtils {
     }
 
     // --- 7. 비밀번호 기반 키 생성 (PBKDF2) ---
+
     /**
      * 31. PBKDF2 알고리즘을 사용하여 비밀번호와 솔트로부터 암호화 키를 생성합니다.
-     * @param password 비밀번호
-     * @param salt 솔트
+     *
+     * @param password  비밀번호
+     * @param salt      솔트
      * @param keyLength 생성할 키의 비트 길이 (e.g., 256 for AES-256)
      * @return 생성된 SecretKey 객체
      * @throws NoSuchAlgorithmException 알고리즘이 지원되지 않을 경우
-     * @throws InvalidKeySpecException 키 스펙이 유효하지 않을 경우
+     * @throws InvalidKeySpecException  키 스펙이 유효하지 않을 경우
      */
     public static SecretKey generateKeyFromPassword(String password, byte[] salt, int keyLength)
-            throws  NoSuchAlgorithmException, InvalidKeySpecException {
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
         SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, keyLength);
         SecretKey tmp = factory.generateSecret(spec);
@@ -407,8 +450,9 @@ public class EncryptUtils {
 
     /**
      * 32. 비밀번호와 솔트를 사용하여 해시값을 생성합니다. (비밀번호 저장용)
+     *
      * @param password 비밀번호
-     * @param salt 솔트
+     * @param salt     솔트
      * @return Base64로 인코딩된 해시 값
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
@@ -423,9 +467,10 @@ public class EncryptUtils {
 
     /**
      * 33. 입력된 비밀번호가 저장된 해시와 일치하는지 검증합니다.
-     * @param password 검증할 비밀번호
+     *
+     * @param password   검증할 비밀번호
      * @param storedHash Base64로 인코딩된, 저장된 해시 값
-     * @param salt 해싱에 사용된 솔트
+     * @param salt       해싱에 사용된 솔트
      * @return 일치하면 true, 그렇지 않으면 false
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
@@ -437,8 +482,10 @@ public class EncryptUtils {
     }
 
     // --- 8. 기타 유틸리티 ---
+
     /**
      * 34. UUID(Universally Unique Identifier)를 생성합니다.
+     *
      * @return 생성된 UUID 문자열
      */
     public static String generateUUID() {
@@ -447,6 +494,7 @@ public class EncryptUtils {
 
     /**
      * 35. 바이트 배열을 16진수 문자열로 변환합니다.
+     *
      * @param bytes 변환할 바이트 배열
      * @return 16진수 문자열
      */
@@ -460,6 +508,7 @@ public class EncryptUtils {
 
     /**
      * 36. 16진수 문자열을 바이트 배열로 변환합니다.
+     *
      * @param hexString 변환할 16진수 문자열
      * @return 변환된 바이트 배열
      */
@@ -470,11 +519,12 @@ public class EncryptUtils {
             data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
                     + Character.digit(hexString.charAt(i + 1), 16));
         }
-        return  data;
+        return data;
     }
 
     /**
      * 37. 안전한 랜덤 바이트 배열을 생성합니다.
+     *
      * @param numBytes 생성할 바이트 배열의 길이
      * @return 생성된 랜덤 바이트 배열
      */
@@ -487,6 +537,7 @@ public class EncryptUtils {
 
     /**
      * 38. 두 바이트 배열이 동일한지 비교합니다. (Timing-attack 방지)
+     *
      * @param a 첫 번째 바이트 배열
      * @param b 두 번째 바이트 배열
      * @return 동일하면 true, 아니면 false
@@ -502,6 +553,7 @@ public class EncryptUtils {
     /**
      * 39. 객체를 직렬화하여 Base64 문자열로 반환합니다.
      * 주의: 직렬화는 보안 취약점을 유발할 수 있으므로 신뢰할 수 있는 데이터에만 사용해야 합니다.
+     *
      * @param object 직렬화할 객체 (java.io.Serializable 구현 필요)
      * @return Base64로 인코딩된 객체 문자열
      * @throws java.io.IOException 직렬화 실패 시
@@ -517,9 +569,10 @@ public class EncryptUtils {
     /**
      * 40. Base64로 인코딩된 문자열을 객체로 역직렬화합니다.
      * 주의: 역직렬화는 보안 취약점을 유발할 수 있으므로 신뢰할 수 있는 데이터에만 사용해야 합니다.
+     *
      * @param encodedObject Base64로 인코딩된 객체 문자열
      * @return 역직렬화된 객체
-     * @throws java.io.IOException 역직렬화 실패 시
+     * @throws java.io.IOException    역직렬화 실패 시
      * @throws ClassNotFoundException 클래스를 찾을 수 없을 때
      */
     public static Object deserializeObjectFromBase64(String encodedObject) throws java.io.IOException, ClassNotFoundException {
@@ -530,11 +583,178 @@ public class EncryptUtils {
         return o;
     }
 
+    // --- 9. 고급 AES (GCM 모드) ---
+
+    /**
+     * 41. AES/GCM/NoPadding 알고리즘을 사용하여 평문을 암호화합니다.
+     * GCM(Galois/Counter Mode)은 암호화와 동시에 데이터 무결성(Authenticity)을 보장하는 AEAD 방식입니다.
+     *
+     * @param plainText 암호화할 평문
+     * @param key       암호화에 사용할 SecretKey
+     * @param iv        암호화에 사용할 초기화 벡터(IV). GCM에서는 12바이트(96비트) 사용을 권장합니다.
+     * @return Base64로 인코딩된 암호문
+     * @throws Exception 암호화 과정에서 오류 발생 시
+     */
+    public static String aesEncryptGCM(String plainText, SecretKey key, byte[] iv) throws Exception {
+        Cipher cipher = Cipher.getInstance(AES_GCM_ALGORITHM);
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, key, spec);
+        byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(encryptedBytes);
+    }
+
+    /**
+     * 42. AES/GCM/NoPadding 알고리즘을 사용하여 암호문을 복호화합니다.
+     * 인증 태그가 포함되어 있어, 데이터가 변조되었다면 복호화에 실패합니다.
+     *
+     * @param cipherText Base64로 인코딩된 암호문
+     * @param key        복호화에 사용할 SecretKey
+     * @param iv         복호화에 사용할 초기화 벡터(IV)
+     * @return 복호화된 평문
+     * @throws Exception 복호화 과정에서 오류 발생 시 (e.g., AEADBadTagException - 데이터 변조 의심)
+     */
+    public static String aesDecryptGCM(String cipherText, SecretKey key, byte[] iv) throws Exception {
+        Cipher cipher = Cipher.getInstance(AES_GCM_ALGORITHM);
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+        cipher.init(Cipher.DECRYPT_MODE, key, spec);
+        byte[] decodedBytes = Base64.getDecoder().decode(cipherText);
+        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
+        return new String(decryptedBytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * 43. 12바이트(96비트) GCM 모드용 초기화 벡터(IV)를 생성합니다.
+     *
+     * @return 생성된 IV 바이트 배열
+     */
+    public static byte[] generateGcmIv() {
+        byte[] iv = new byte[GCM_IV_LENGTH];
+        new SecureRandom().nextBytes(iv);
+        return iv;
+    }
+
+    // --- 10. 파일 암호화/복호화 ---
+
+    /**
+     * 44. 파일을 AES/CBC 방식으로 암호화합니다. 스트림을 사용하여 대용량 파일도 처리 가능합니다.
+     *
+     * @param inputFile  암호화할 파일 객체
+     * @param outputFile 암호화된 내용이 저장될 파일 객체
+     * @param key        암호화에 사용할 SecretKey
+     * @param iv         암호화에 사용할 초기화 벡터(IV)
+     * @throws Exception 파일 처리 또는 암호화 중 오류 발생 시
+     */
+    public static void encryptFile(File inputFile, File outputFile, SecretKey key, IvParameterSpec iv) throws Exception {
+        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+
+        try (FileInputStream inputStream = new FileInputStream(inputFile);
+             FileOutputStream outputStream = new FileOutputStream(outputFile);
+             CipherOutputStream cipherOutputStream = new CipherOutputStream(outputStream, cipher)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                cipherOutputStream.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
+    /**
+     * 45. 암호화된 파일을 AES/CBC 방식으로 복호화합니다.
+     * @param inputFile 암호화된 파일 객체
+     * @param outputFile 복호화된 내용이 저장될 파일 객체
+     * @param key 복호화에 사용할 SecretKey
+     * @param iv 복호화에 사용할 초기화 벡터(IV)
+     * @throws Exception 파일 처리 또는 복호화 중 오류 발생 시
+     */
+    public static void decryptFile(File inputFile, File outputFile, SecretKey key, IvParameterSpec iv) throws Exception {
+        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, key, iv);
+
+        try (FileInputStream inputStream = new FileInputStream(inputFile);
+             CipherInputStream cipherInputStream = new CipherInputStream(inputStream, cipher);
+             FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = cipherInputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
+    // --- 11. 편의성 래퍼(Wrapper) ---
+    /**
+     * 46. AES 암호화 후, IV와 암호문을 "IV:Ciphertext" 형태로 합쳐 반환합니다. (모두 Base64 인코딩)
+     * IV를 별도로 관리할 필요가 없어 편리합니다.
+     * @param plainText 암호화할 평문
+     * @param key 암호화에 사용할 SecretKey
+     * @return Base64(IV) + ":" + Base64(Ciphertext) 형식의 문자열
+     * @throws Exception 암호화 과정에서 오류 발생 시
+     */
+    public static String aesEncryptWithCombinedIv(String plainText, SecretKey key) throws Exception {
+        IvParameterSpec iv = generateIv();
+        String cipherText = aesEncrypt(plainText, key, iv);
+        String encodedIv = encodeIvToBase64(iv);
+        return encodedIv + ":" + cipherText;
+    }
+
+    /**
+     * 47. "IV:Ciphertext" 형태로 결합된 문자열을 받아 AES 복호화를 수행합니다.
+     * @param combinedCipherText Base64(IV) + ":" + Base64(Ciphertext) 형식의 문자열
+     * @param key 복호화에 사용할 SecretKey
+     * @return 복호화된 평문
+     * @throws Exception 복호화 과정 또는 포맷 오류 발생 시
+     */
+    public static String aesDecryptWithCombinedIv(String combinedCipherText, SecretKey key) throws Exception {
+        String[] parts = combinedCipherText.split(":");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid combined cipher text format. Expected 'IV:Ciphertext'.");
+        }
+        IvParameterSpec iv = decodeIvFromBase64(parts[0]);
+        return aesDecrypt(parts[1], key, iv);
+    }
+
+    // --- 12. 다양한 해시 알고리즘 ---
+    /**
+    * 48. [주의] SHA-1 알고리즘을 사용하여 문자열을 해싱합니다.
+    * SHA-1은 현재 보안에 취약하므로, 레거시 시스템 연동 등 불가피한 경우에만 사용해야 합니다.
+    * @param input 해싱할 입력 문자열
+    * @return 해싱된 값 (Hex String)
+    * @throws NoSuchAlgorithmException
+    * @deprecated SHA-1 is considered insecure. Use SHA-256 or higher.
+    */
+    @Deprecated
+    public static String sha1(String input) throws NoSuchAlgorithmException {
+        return hashWithAlgorithm("SHA-1", input);
+    }
+
+    /**
+     * 49. SHA-384 알고리즘을 사용하여 문자열을 해싱합니다.
+     * @param input 해싱할 입력 문자열
+     * @return 해싱된 값 (Hex String)
+     * @throws NoSuchAlgorithmException
+     */
+    public static String sha384(String input) throws NoSuchAlgorithmException {
+        return hashWithAlgorithm("SHA-384", input);
+    }
+
+    /**
+     * 50. SHA-512 알고리즘을 사용하여 문자열을 해싱합니다.
+     * @param input 해싱할 입력 문자열
+     * @return 해싱된 값 (Hex String)
+     * @throws NoSuchAlgorithmException
+     */
+    public static String sha512(String input) throws NoSuchAlgorithmException {
+        return hashWithAlgorithm("SHA-512", input);
+    }
+
     /**
      * 51. 다양한 HMAC 알고리즘으로 메시지 인증 코드를 생성합니다. (e.g., HmacSHA1, HmacSHA512)
+     *
      * @param algorithm HMAC 알고리즘 이름
-     * @param data 인증할 데이터
-     * @param key 비밀키
+     * @param data      인증할 데이터
+     * @param key       비밀키
      * @return Base64로 인코딩된 HMAC 값
      * @throws Exception
      */
@@ -546,11 +766,85 @@ public class EncryptUtils {
         return Base64.getEncoder().encodeToString(hmacBytes);
     }
 
+    /**
+     * 52. [주의] HmacSHA1 알고리즘을 사용하여 메시지 인증 코드를 생성합니다.
+     * @param data 인증할 데이터
+     * @param key 비밀키
+     * @return Base64로 인코딩된 HMAC 값
+     * @throws Exception
+     * @deprecated HMAC-SHA1 is considered weak. Use HMAC-SHA256 or higher.
+     */
+    @Deprecated
+    public static String generataHmacSha1(String data, String key) throws Exception {
+        return generatehmacWithAlgorithm("HmacSHA1", data, key);
+    }
+
+    /**
+     * 53. HmacSHA512 알고리즘을 사용하여 메시지 인증 코드를 생성합니다.
+     * @param data 인증할 데이터
+     * @param key 비밀키
+     * @return Base64로 인코딩된 HMAC 값
+     * @throws Exception
+     */
+    public static String generateHmacSha512(String data, String key) throws Exception {
+        return generatehmacWithAlgorithm("HmacSHA512", data, key);
+    }
+
+    // --- 13. 키 저장 및 로드 유틸리티 ---
+    /**
+     * 54. Key 객체(SecretKey, PublicKey, PrivateKey)를 파일로 저장합니다.
+     * @param key 저장할 Key 객체
+     * @param path 저장할 파일 경로
+     * @throws IOException 파일 쓰기 오류 발생 시
+     */
+    public static void saveKeyToFile(Key key, String path) throws IOException {
+        byte[] keyBytes = key.getEncoded();
+        Files.write(Paths.get(path), keyBytes);
+    }
+
+    /**
+     * 55. 파일로부터 AES SecretKey를 로드합니다.
+     * @param path 키 파일 경로
+     * @return 로드된 SecretKey 객체
+     * @throws IOException 파일 읽기 오류 발생 시
+     */
+    public static SecretKey loadAESKeyFromFile(String path) throws IOException {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+        return new SecretKeySpec(keyBytes, "AES");
+    }
+
+    /**
+     * 56. 파일로부터 RSA PublicKey를 로드합니다.
+     * @param path 키 파일 경로
+     * @return 로드된 PublicKey 객체
+     * @throws Exception 파일 처리 또는 키 스펙 오류 발생 시
+     */
+    public static PublicKey loadPublicKeyFromFile(String path) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
+    }
+
+    /**
+     * 57. 파일로부터 RSA PrivateKey를 로드합니다.
+     * @param path 키 파일 경로
+     * @return 로드된 PrivateKey 객체
+     * @throws Exception 파일 처리 또는 키 스펙 오류 발생 시
+     */
+    public static PrivateKey loadPrivateKeyFromFile(String path) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(spec);
+    }
+
     // --- 14. 추가 유틸리티 ---
     /**
      * 58. 지정된 문자셋(Charset)을 사용하여 문자열을 Base64로 인코딩합니다.
+     *
      * @param plainText 인코딩할 문자열
-     * @param charset 사용할 문자셋
+     * @param charset   사용할 문자셋
      * @return Base64로 인코딩된 문자열
      */
     public static String base64Encode(String plainText, Charset charset) {
@@ -559,8 +853,9 @@ public class EncryptUtils {
 
     /**
      * 59. 지정된 문자셋(Charset)을 사용하여 Base64 문자열을 디코딩합니다.
+     *
      * @param encodedText 디코딩할 Base64 문자열
-     * @param charset 사용할 문자셋
+     * @param charset     사용할 문자셋
      * @return 디코딩된 문자열
      */
     public static String base64Decode(String encodedText, Charset charset) {
@@ -569,9 +864,57 @@ public class EncryptUtils {
     }
 
     /**
+     * 60. 안전한 랜덤 비밀번호를 생성합니다. (대문자, 소문자, 숫자, 특수문자 포함)
+     * @param length 생성할 비밀번호 길이 (최소 8)
+     * @return 생성된 랜덤 비밀번호 문자열
+     */
+    public static String generateRandomPassword(int length) {
+        if (length < 8) {
+            throw new IllegalArgumentException("Password length must be at least 8 characters.");
+        }
+        final String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        final String lower = "abcdefghijklmnopqrstuvwxyz";
+        final String digits = "0123456789";
+        final String symbol = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+        final String allChars = upper + lower + digits + symbol;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder();
+
+        // 각 종류의 문자를 최소 1개씩 포함
+        password.append(upper.charAt(random.nextInt(upper.length())));
+        password.append(lower.charAt(random.nextInt(lower.length())));
+        password.append(digits.charAt(random.nextInt(digits.length())));
+        password.append(symbol.charAt(random.nextInt(symbol.length())));
+
+        // 나머지 길이 채우기
+        for (int i = 4; i < length; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+        // 생성된 비밀번호 무작위 섞기
+        List<Character> chars = password.chars().mapToObj(c -> (char) c).collect(Collectors.toList());
+        Collections.shuffle(chars, random);
+
+        return chars.stream().collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
+    }
+
+    /**
+     * 61. 데이터 무결성 검증을 위해 CRC32 체크섬을 계산합니다.
+     * 암호화 목적이 아니며, 데이터 전송 중 오류 발생 여부 등을 확인하는 데 사용됩니다.
+     * @param data 체크섬을 계산할 바이트 배열
+     * @return 계산된 CRC32 체크섬 값 (long)
+     */
+    public static long calculateCRC32(byte[] data) {
+        CRC32 crc32 = new CRC32();
+        crc32.update(data);
+        return crc32.getValue();
+    }
+
+    /**
      * 62. 지정된 해시 알고리즘을 수행하는 내부 헬퍼 메서드.
+     *
      * @param algorithm 해시 알고리즘 이름 (e.g., "SHA-256")
-     * @param input 해싱할 입력 문자열
+     * @param input     해싱할 입력 문자열
      * @return 해싱된 값 (Hex String)
      * @throws NoSuchAlgorithmException
      */

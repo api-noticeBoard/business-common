@@ -305,6 +305,8 @@ public class EncryptUtils {
 
     /**
      * 21. HmacSHA256 알고리즘을 사용하여 메시지 인증 코드를 생성합니다.
+     * Hash-based Message Authentication Codefh
+     * 비밀키는 데이터를 보내는 사람과 받는 사람만 공유해 API 통신이나 웹 서비스에서 데이터가 안전하게 전송되었는지 검증할 때 널리 사용
      *
      * @param data 인증할 데이터
      * @param key  비밀키
@@ -313,6 +315,35 @@ public class EncryptUtils {
      */
     public static String generateHmacSha256(String data, String key) throws Exception {
         return generatehmacWithAlgorithm(HMAC_ALGORITHM, data, key);
+    }
+
+    /**
+     * 51. 다양한 HMAC 알고리즘으로 메시지 인증 코드를 생성합니다. (e.g., HmacSHA1, HmacSHA512)
+     * @param algorithm HMAC 알고리즘 이름
+     * @param data 인증할 데이터
+     * @param key 비밀키
+     * @return Base64로 인코딩된 HMAC 값
+     * @throws Exception
+     */
+    public static String generateHmacWithAlgorithm(String data, String key, String algorithm) throws Exception {
+        Mac mac = Mac.getInstance(algorithm);
+        SecretKeySpec secret_key = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), algorithm);
+        mac.init(secret_key);
+        byte[] hmacBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(hmacBytes);
+    }
+
+    /**
+     * 52. [주의] HmacSHA1 알고리즘을 사용하여 메시지 인증 코드를 생성합니다.
+     * @param data 인증할 데이터
+     * @param key 비밀키
+     * @return Base64로 인코딩된 HMAC 값
+     * @throws Exception
+     * @deprecated HMAC-SHA1 is considered weak. Use HMAC-SHA256 or higher.
+     */
+    @Deprecated
+    public static String generateHmacSha1(String data, String key) throws Exception {
+        return generateHmacWithAlgorithm("HmacSHA1", data, key);
     }
 
     /**
@@ -329,8 +360,29 @@ public class EncryptUtils {
         return generatedHmac.equals(hmac);
     }
 
-    // --- 5. Base64 인코딩/디코딩 ---
+    /**
+     * [새로 추가된 메서드]
+     * 지정된 HMAC 알고리즘을 사용하여 메시지 무결성을 검증합니다.
+     * 내부적으로 generateHmacWithAlgorithm을 호출하여 받은 데이터로 HMAC 값을 생성하고,
+     * 파라미터로 받은 hmac 값과 비교하여 일치 여부를 반환합니다.
+     *
+     * @param algorithm 사용할 HMAC 알고리즘 (예: "HmacSHA256", "HmacSHA512")
+     * @param data      원본 데이터
+     * @param key       비밀키
+     * @param hmac      검증할 HMAC 값 (Base64로 인코딩된 문자열)
+     * @return HMAC 값이 유효하면 true, 그렇지 않으면 false
+     * @throws Exception 검증 과정에서 오류 발생 시
+     */
+    public static boolean verifyHmacWithAlgorithm(String data, String key, String hmac, String algorithm) throws Exception {
+        // 1. 동일한 알고리즘, 데이터, 키를 사용하여 새로운 HMAC 값을 생성합니다.
+        String generatedHmac = generateHmacWithAlgorithm(data, key, algorithm);
 
+        // 2. 파라미터로 받은 hmac 값과 새로 생성한 HMAC 값을 비교합니다.
+        //    두 값이 일치하면 데이터가 변조되지 않았고, 키가 올바르다는 것을 의미합니다.
+        return generatedHmac.equals(hmac);
+    }
+
+    // --- 5. Base64 인코딩/디코딩 ---
     /**
      * 23. 문자열을 Base64로 인코딩합니다. (UTF-8)
      *
@@ -724,7 +776,7 @@ public class EncryptUtils {
     * @throws NoSuchAlgorithmException
     * @deprecated SHA-1 is considered insecure. Use SHA-256 or higher.
     */
-    @Deprecated
+    @Deprecated // IDE(통합 개발 환경)가 해당 메서드에 시각적인 줄을 표시(더 이상 사용하지 않기를 권장)
     public static String sha1(String input) throws NoSuchAlgorithmException {
         return hashWithAlgorithm("SHA-1", input);
     }
@@ -774,7 +826,7 @@ public class EncryptUtils {
      * @throws Exception
      * @deprecated HMAC-SHA1 is considered weak. Use HMAC-SHA256 or higher.
      */
-    @Deprecated
+    @Deprecated // IDE(통합 개발 환경)가 해당 메서드에 시각적인 줄을 표시(더 이상 사용하지 않기를 권장)
     public static String generataHmacSha1(String data, String key) throws Exception {
         return generatehmacWithAlgorithm("HmacSHA1", data, key);
     }

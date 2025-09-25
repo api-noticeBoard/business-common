@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -493,6 +492,25 @@ public final class ValidationUtils {
 
     /**
      * 대한민국 사업자등록번호(10자리)의 유효성을 검증합니다.
+     * 예시 번호: 1200673420
+     * 가중치: {1, 3, 7, 1, 3, 7, 1, 3, 5}
+     * 가중치 곱하기:
+     * (1*1) + (2*3) + (0*7) + (0*1) + (6*3) + (7*7) + (3*1) + (4*3) + (2*5)
+     * = 1 + 6 + 0 + 0 + 18 + 49 + 3 + 12 + 10 = 99
+     * 9번째 자리 처리:
+     * 9번째 자리 숫자는 2입니다.
+     * (2 * 5) / 10 = 10 / 10 = 1
+     * 모두 합산:
+     * 99 + 1 = 100
+     * 검증 번호 계산:
+     * (10 - (100 % 10)) % 10
+     * (10 - 0) % 10 = 0
+     * 계산된 검증 번호는 0입니다. 원래 번호의 10번째 자리도 0이므로, 이 번호는 유효한 사업자 등록번호
+     * 문자 '0'은 아스키 코드 48입니다.
+     * 문자 '1'은 아스키 코드 49입니다. ...
+     * 문자 '9'는 아스키 코드 57입니다.
+     * 따라서 '5'(아스키 코드 53)와 '0'(아스키 코드 48)을 빼면, 53 - 48 = 5라는 결과가 나오면서 문자가 숫자로 변환
+     *
      * @param regNo 검증할 사업자등록번호 10자리 문자열
      * @return 유효한 사업자등록번호이면 true
      */
